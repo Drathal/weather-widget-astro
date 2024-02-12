@@ -1,3 +1,6 @@
+import type { APIRoute } from "astro";
+import qs from "qs";
+
 // we shoulkd dynamically import the fixture
 import fixture from "../../fixtures/weather-hamburg.json";
 
@@ -5,10 +8,6 @@ const apiKey: string = import.meta.env.PUBLIC_ApiKey;
 // this could be a secret/config in a real app
 const units: string = "metric";
 const lang: string = "de";
-
-type Params = {
-  city?: String;
-};
 
 export interface WeatherData {
   coord: Coord;
@@ -75,22 +74,39 @@ interface Coord {
  * @throws a 500 error if the request fails
  * @example fetch("/api/weather?city=Hamburg")
  */
-export async function GET(params: Params): Promise<Response> {
-  console.log(import.meta.env.PUBLIC_UseFixture);
-  if (import.meta.env.PUBLIC_UseFixture) {
+export const GET: APIRoute = async ({ params, request }) => {
+  const parsedParams = qs.parse(request.url.split("?")[1] || "");
+  let city = (parsedParams.city as string) || "Hamburg";
+  let lon = (parsedParams.lon as string) || "";
+  let lat = (parsedParams.lat as string) || "";
+
+  // TODO: add support for longitude and latitude
+  // TODO: look at Doc to find out how to use the api, we always get the location where im from.
+  // the url with placeholders could also be a config in a real app
+  const apiUrlCity: string = `https://api.openweathermap.org/data/2.5/weather?units=${units}&appid=${apiKey}&q=${city}&lang=${lang}`;
+  const apiUrlGeo: string = `https://api.openweathermap.org/data/2.5/weather?units=${units}&appid=${apiKey}&lon=${lon}&lat=${lat}&lang=${lang}`;
+
+  if (!city && lon && lat) {
+    var apiUrl = apiUrlGeo;
+  } else {
+    var apiUrl = apiUrlCity;
+  }
+
+  console.log("Use Fixture:", import.meta.env.PUBLIC_UseFixture);
+  console.log("parsedParams:", parsedParams);
+
+  if (import.meta.env.PUBLIC_UseFixture === "true") {
+    fixture.name = city;
+    if (lat) fixture.coord.lat = parseInt(lat);
+    if (lon) fixture.coord.lon = parseInt(lon);
+    if (lon && lat) fixture.name = `Your Location`;
+
     return new Response(JSON.stringify(fixture), {
       headers: {
         "Content-Type": "application/json",
       },
     });
   }
-
-  let city = params.city || "Hamburg";
-
-  // TODO: add support for longitude and latitude
-  // TODO: look at Doc to find out how to use the api, we always get the location where im from.
-  // the url with placeholders could also be a config in a real app
-  const apiUrl: string = `https://api.openweathermap.org/data/2.5/weather?units=${units}&appid=${apiKey}&q=${city}&lang=${lang}`;
 
   // we dont trust the user, i use a simple regex to remove all non-letter characters
   city = city.replace(/[^a-zA-Z]/g, "");
@@ -115,4 +131,4 @@ export async function GET(params: Params): Promise<Response> {
       }
     );
   }
-}
+};

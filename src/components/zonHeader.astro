@@ -1,0 +1,24 @@
+---
+import ZonLogo from "../assets/zon.svg?raw";
+import MenuIcon from "../assets/menu.svg?raw";
+import UserIcon from "../assets/user.svg?raw";
+---
+
+<header
+  class="flex bg-gray-200 dark:bg-neutral-900 dark:text-slate-100 justify-between h-16 md:h-20 p-3 md:max-w-128 mx-auto"
+>
+  <div class="flex items-center md:w-64">
+    <Fragment set:html={MenuIcon} />
+    <div class="hidden ml-3 md:flex">Menu</div>
+  </div>
+
+  <div class="flex items-center w-full px-2 max-w-48 md:max-w-64 min-w-32">
+    <Fragment set:html={ZonLogo} />
+  </div>
+  <div class="flex items-center justify-end md:w-64">
+    <div class="bg-white-500 hidden me-3 md:flex items-center">
+      <slot />
+    </div>
+    <Fragment set:html={UserIcon} />
+  </div>
+</header>

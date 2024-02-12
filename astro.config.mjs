@@ -1,10 +1,22 @@
-import { defineConfig } from 'astro/config';
-import solid from '@astrojs/solid-js';
-
+import { defineConfig } from "astro/config";
+import basicSsl from "@vitejs/plugin-basic-ssl";
+import solid from "@astrojs/solid-js";
 import tailwind from "@astrojs/tailwind";
 
-// https://astro.build/config
+import vercel from "@astrojs/vercel/serverless";
+
 export default defineConfig({
-  // Enable Solid to support Solid JSX components.
-  integrations: [solid(), tailwind()]
+  integrations: [solid(), tailwind()],
+  vite: {
+    plugins: [
+      basicSsl({
+        /** name of certification */
+        name: "hello",
+        /** custom trust domains */
+        domains: ["localhost"],
+      }),
+    ],
+  },
+  output: "server",
+  adapter: vercel(),
 });
