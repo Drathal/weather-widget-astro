@@ -76,30 +76,31 @@ interface Coord {
  */
 export const GET: APIRoute = async ({ params, request }) => {
   const parsedParams = qs.parse(request.url.split("?")[1] || "");
-  let city = (parsedParams.city as string) || "Hamburg";
+  let city = (parsedParams.city as string) || "";
   let lon = (parsedParams.lon as string) || "";
   let lat = (parsedParams.lat as string) || "";
 
-  // TODO: add support for longitude and latitude
-  // TODO: look at Doc to find out how to use the api, we always get the location where im from.
   // the url with placeholders could also be a config in a real app
-  const apiUrlCity: string = `https://api.openweathermap.org/data/2.5/weather?units=${units}&appid=${apiKey}&q=${city}&lang=${lang}`;
+  const apiUrlCity: string = `https://api.openweathermap.org/data/2.5/weather?units=${units}&appid=${apiKey}&q=${
+    city || "Hamburg "
+  }&lang=${lang}`;
   const apiUrlGeo: string = `https://api.openweathermap.org/data/2.5/weather?units=${units}&appid=${apiKey}&lon=${lon}&lat=${lat}&lang=${lang}`;
 
-  if (!city && lon && lat) {
+  if (lon && lat) {
     var apiUrl = apiUrlGeo;
   } else {
     var apiUrl = apiUrlCity;
   }
 
-  console.log("Use Fixture:", import.meta.env.PUBLIC_UseFixture);
-  console.log("parsedParams:", parsedParams);
+  console.log(parsedParams, apiUrl);
 
+  // just for development
   if (import.meta.env.PUBLIC_UseFixture === "true") {
-    fixture.name = city;
     if (lat) fixture.coord.lat = parseInt(lat);
     if (lon) fixture.coord.lon = parseInt(lon);
     if (lon && lat) fixture.name = `Your Location`;
+    if (!city) fixture.name = "Hamburg, Germany";
+    if (city) fixture.name = city;
 
     return new Response(JSON.stringify(fixture), {
       headers: {
@@ -109,6 +110,7 @@ export const GET: APIRoute = async ({ params, request }) => {
   }
 
   // we dont trust the user, i use a simple regex to remove all non-letter characters
+  // lon lat should also be sanitized
   city = city.replace(/[^a-zA-Z]/g, "");
 
   // in real life, you would probably want to cache the response and use a library like `axios`

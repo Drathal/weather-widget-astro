@@ -43,15 +43,19 @@ export default function WeatherWidget({
     withCatchAll(),
   ]);
   const [queryParams, setQueryParams] = createSignal<QueryParams>({
-    city: defaultCity,
+    city: "",
     lon: "",
     lat: "",
   });
 
   const query = createMemo(() => {
-    return `?city=${queryParams().city}&lon=${queryParams().lon}&lat=${
-      queryParams().lat
-    }`;
+    if (queryParams().city) {
+      return `?city=${queryParams().city}`;
+    } else if (queryParams().lon && queryParams().lat) {
+      return `?lon=${queryParams().lon}&lat=${queryParams().lat}`;
+    }
+
+    return `?city=${defaultCity}`;
   });
 
   const geoLocationSuccess = (pos: GeolocationPosition) => {
@@ -62,7 +66,7 @@ export default function WeatherWidget({
     }));
   };
 
-  if (withGeolocation) {
+  if (withGeolocation && !localStorage.getItem("city")) {
     getGeoLocation(geoLocationSuccess);
   }
 
@@ -132,7 +136,7 @@ export default function WeatherWidget({
             </span>
           </div>
 
-          <div class="flex items-center justify-start w-full h-full">
+          <div class="flex items-center justify-start w-full h-full ps-1">
             {weatherResult()!.name}
             <br />
             {weatherResult()!.weather[0].description}
