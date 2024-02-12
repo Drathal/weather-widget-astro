@@ -92,8 +92,6 @@ export const GET: APIRoute = async ({ params, request }) => {
     var apiUrl = apiUrlCity;
   }
 
-  console.log(parsedParams, apiUrl);
-
   // just for development
   if (import.meta.env.PUBLIC_UseFixture === "true") {
     if (lat) fixture.coord.lat = parseInt(lat);
